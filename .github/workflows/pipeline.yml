@@ -33,23 +33,8 @@ jobs:
       - name: Train model
         run: python train.py
 
-      - name: Export MLflow Run ID
-        shell: bash
-        run: |
-          python <<'PY'
-          import os
-
-          if not os.path.exists("run_id.txt"):
-              raise FileNotFoundError("run_id.txt was not created by train.py")
-
-          with open("run_id.txt", "r") as f:
-              run_id = f.read().strip()
-
-          with open("model_info.txt", "w") as f:
-              f.write(run_id)
-
-          print(f"Saved Run ID to model_info.txt: {run_id}")
-          PY
+      - name: Create model_info.txt
+        run: cp run_id.txt model_info.txt
 
       - name: Upload model info artifact
         uses: actions/upload-artifact@v4
