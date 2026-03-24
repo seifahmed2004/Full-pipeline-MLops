@@ -94,7 +94,7 @@ jobs:
       - name: Debug mlruns structure
         run: |
           echo "===== FINAL STRUCTURE ====="
-          ls -R mlruns
+          ls -R mlruns || echo "mlruns missing"
 
       - name: Check accuracy threshold
         run: python check_threshold.py
