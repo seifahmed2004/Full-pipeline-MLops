@@ -2,30 +2,33 @@ import os
 import sys
 import mlflow
 
-THRESHOLD = 0.85
+mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
 
-tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
-if not tracking_uri:
-    raise ValueError("MLFLOW_TRACKING_URI is not set")
-
-mlflow.set_tracking_uri(tracking_uri)
-
-with open("model_info.txt", "r") as f:
+with open("model_info.txt") as f:
     run_id = f.read().strip()
 
 client = mlflow.tracking.MlflowClient()
+
+print("Looking for run:", run_id)
+
+# DEBUG: list runs
+experiments = client.search_experiments()
+for exp in experiments:
+    runs = client.search_runs(exp.experiment_id)
+    for r in runs:
+        print("Found run:", r.info.run_id)
+
 run = client.get_run(run_id)
 
-if "accuracy" not in run.data.metrics:
-    raise ValueError(f"No 'accuracy' metric found for run {run_id}")
+accuracy = run.data.metrics.get("accuracy", None)
 
-accuracy = run.data.metrics["accuracy"]
+if accuracy is None:
+    raise ValueError("Accuracy not found")
 
-print(f"Run ID: {run_id}")
-print(f"Accuracy: {accuracy:.4f}")
+print("Accuracy:", accuracy)
 
-if accuracy < THRESHOLD:
-    print(f"Model failed threshold: {accuracy:.4f} < {THRESHOLD}")
+if accuracy < 0.85:
+    print("FAILED threshold")
     sys.exit(1)
 
-print("Model passed threshold")
+print("PASSED threshold")

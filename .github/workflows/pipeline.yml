@@ -33,6 +33,11 @@ jobs:
       - name: Train model
         run: python train.py
 
+      - name: Debug MLflow structure
+        run: |
+          echo "===== MLRUNS STRUCTURE ====="
+          ls -R mlruns || echo "mlruns not found"
+
       - name: Create model_info.txt
         run: cp run_id.txt model_info.txt
 

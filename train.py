@@ -6,11 +6,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
-tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
-if not tracking_uri:
-    raise ValueError("MLFLOW_TRACKING_URI is not set")
+# Set tracking URI
+mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
 
-mlflow.set_tracking_uri(tracking_uri)
+# IMPORTANT: create experiment
 mlflow.set_experiment("Assignment5_Pipeline")
 
 X, y = load_iris(return_X_y=True)
@@ -25,13 +24,14 @@ with mlflow.start_run() as run:
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
 
-    mlflow.log_param("n_estimators", 200)
-    mlflow.log_param("max_depth", 10)
     mlflow.log_metric("accuracy", accuracy)
     mlflow.sklearn.log_model(model, "model")
 
-    with open("run_id.txt", "w") as f:
-        f.write(run.info.run_id)
+    run_id = run.info.run_id
 
-    print(f"Run ID: {run.info.run_id}")
-    print(f"Accuracy: {accuracy:.4f}")
+    # SAVE run id
+    with open("run_id.txt", "w") as f:
+        f.write(run_id)
+
+    print("Run ID:", run_id)
+    print("Accuracy:", accuracy)
