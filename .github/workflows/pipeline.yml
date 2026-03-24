@@ -28,16 +28,30 @@ jobs:
           pip install -r requirements.txt
 
       - name: Pull dataset with DVC
-        run: dvc pull
+        run: dvc pull || echo "No DVC remote configured"
 
       - name: Train model
         run: python train.py
+
+      - name: Debug MLflow structure
+        run: |
+          echo "===== MLRUNS STRUCTURE ====="
+          ls -R mlruns || echo "mlruns not found"
+
+      - name: Archive MLflow runs
+        run: tar -czf mlruns.tar.gz mlruns
 
       - name: Upload model info artifact
         uses: actions/upload-artifact@v4
         with:
           name: model-info
           path: model_info.txt
+
+      - name: Upload MLflow archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlruns-archive
+          path: mlruns.tar.gz
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,21 +69,34 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install dependencies
+      - name: Install MLflow
         run: |
           pip install --upgrade pip
-          pip install mlflow
+          pip install mlflow pandas
 
       - name: Download model info artifact
         uses: actions/download-artifact@v4
         with:
           name: model-info
 
+      - name: Download MLflow archive
+        uses: actions/download-artifact@v4
+        with:
+          name: mlruns-archive
+
+      - name: Extract MLflow runs
+        run: tar -xzf mlruns.tar.gz
+
+      - name: Debug mlruns structure
+        run: |
+          echo "===== FINAL STRUCTURE ====="
+          ls -R mlruns || echo "mlruns missing"
+
       - name: Check accuracy threshold
         run: python check_threshold.py
 
       - name: Mock Docker build
-        run: echo "Building Docker image for Run ID: $(cat model_info.txt)"
+        run: 'echo "Building Docker image for Run ID: $(python -c "import json; print(json.load(open(\"model_info.txt\"))[\"run_id\"])")"'
 
       - name: Build Docker image
-        run: docker build --build-arg RUN_ID="$(cat model_info.txt)" -t my-model:latest .
+        run: 'docker build --build-arg RUN_ID=$(python -c "import json; print(json.load(open(\"model_info.txt\"))[\"run_id\"])") -t my-model:latest .'
