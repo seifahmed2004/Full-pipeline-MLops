@@ -29,10 +29,10 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 with mlflow.start_run() as run:
     model = RandomForestClassifier(
-        n_estimators=500,
-        max_depth=None,
+        n_estimators=1,   # VERY SMALL
+        max_depth=1,
         random_state=42
-    )
+    )    
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
