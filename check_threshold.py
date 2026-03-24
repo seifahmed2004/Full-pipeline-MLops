@@ -16,12 +16,10 @@ with open("model_info.txt", "r") as f:
 client = mlflow.tracking.MlflowClient()
 run = client.get_run(run_id)
 
-metrics = run.data.metrics
-
-if "accuracy" not in metrics:
+if "accuracy" not in run.data.metrics:
     raise ValueError(f"No 'accuracy' metric found for run {run_id}")
 
-accuracy = metrics["accuracy"]
+accuracy = run.data.metrics["accuracy"]
 
 print(f"Run ID: {run_id}")
 print(f"Accuracy: {accuracy:.4f}")
