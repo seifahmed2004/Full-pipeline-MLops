@@ -38,17 +38,20 @@ jobs:
           echo "===== MLRUNS STRUCTURE ====="
           ls -R mlruns || echo "mlruns not found"
 
+      - name: Archive MLflow runs
+        run: tar -czf mlruns.tar.gz mlruns
+
       - name: Upload model info artifact
         uses: actions/upload-artifact@v4
         with:
           name: model-info
           path: model_info.txt
 
-      - name: Upload MLflow runs
+      - name: Upload MLflow archive
         uses: actions/upload-artifact@v4
         with:
-          name: mlruns
-          path: mlruns
+          name: mlruns-archive
+          path: mlruns.tar.gz
 
   deploy:
     runs-on: ubuntu-latest
@@ -76,17 +79,13 @@ jobs:
         with:
           name: model-info
 
-      - name: Download MLflow runs
+      - name: Download MLflow archive
         uses: actions/download-artifact@v4
         with:
-          name: mlruns
+          name: mlruns-archive
 
-      - name: Fix MLflow folder structure
-        run: |
-          if [ -d "mlruns/mlruns" ]; then
-            mv mlruns/mlruns/* mlruns/
-            rm -rf mlruns/mlruns
-          fi
+      - name: Extract MLflow runs
+        run: tar -xzf mlruns.tar.gz
 
       - name: Debug mlruns structure
         run: |
