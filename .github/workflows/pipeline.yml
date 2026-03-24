@@ -83,7 +83,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: mlruns
-          path: .
+
+      - name: Fix MLflow folder structure
+        run: |
+          if [ -d "mlruns/mlruns" ]; then
+            mv mlruns/mlruns/* mlruns/
+            rm -rf mlruns/mlruns
+          fi
+
+      - name: Debug mlruns structure
+        run: |
+          echo "===== FINAL STRUCTURE ====="
+          ls -R mlruns
 
       - name: Check accuracy threshold
         run: python check_threshold.py
