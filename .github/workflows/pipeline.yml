@@ -72,6 +72,4 @@ jobs:
         run: echo "Building Docker image for Run ID: $(cat model_info.txt)"
 
       - name: Build Docker image
-        run: |
-          RUN_ID=$(cat model_info.txt)
-          docker build --build-arg RUN_ID=$RUN_ID -t my-model:latest .
+        run: docker build --build-arg RUN_ID="$(cat model_info.txt)" -t my-model:latest .
