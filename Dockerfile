@@ -1,9 +1,10 @@
 FROM python:3.10-slim
 
-ARG RUN_ID
-
 WORKDIR /app
 
-RUN echo "Downloading model for Run ID: ${RUN_ID}"
+ARG RUN_ID
+ENV RUN_ID=$RUN_ID
 
-CMD ["sh", "-c", "echo Model container started for Run ID: ${RUN_ID}"]
+COPY . /app
+
+CMD sh -c 'echo "Simulating model download for Run ID: $RUN_ID"'
