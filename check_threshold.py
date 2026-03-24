@@ -1,34 +1,47 @@
+import json
 import os
 import sys
+
 import mlflow
 
-mlflow.set_tracking_uri("file:./mlruns")
+THRESHOLD = 0.85
 
-with open("model_info.txt") as f:
-    run_id = f.read().strip()
+tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "file:./mlruns")
+mlflow.set_tracking_uri(tracking_uri)
+
+with open("model_info.txt", "r", encoding="utf-8") as f:
+    info = json.load(f)
+
+experiment_id = str(info["experiment_id"])
+run_id = info["run_id"]
 
 client = mlflow.tracking.MlflowClient()
 
+print(f"Experiment ID: {experiment_id}")
 print(f"Looking for run: {run_id}")
 
-# DEBUG: print all runs
-experiments = client.search_experiments()
-for exp in experiments:
-    runs = client.search_runs(exp.experiment_id)
-    for r in runs:
-        print("Available run:", r.info.run_id)
+runs = client.search_runs(
+    experiment_ids=[experiment_id],
+    filter_string=f"attributes.run_id = '{run_id}'",
+)
 
-run = client.get_run(run_id)
+if not runs:
+    all_runs = client.search_runs(experiment_ids=[experiment_id])
+    print("Available runs in experiment:")
+    for r in all_runs:
+        print(r.info.run_id)
+    raise ValueError(f"Run {run_id} not found in experiment {experiment_id}")
 
+run = runs[0]
 accuracy = run.data.metrics.get("accuracy")
 
 if accuracy is None:
-    raise ValueError("Accuracy not found")
+    raise ValueError(f"Accuracy not found for run {run_id}")
 
 print(f"Accuracy: {accuracy:.4f}")
 
-if accuracy < 0.85:
-    print("FAILED threshold")
+if accuracy < THRESHOLD:
+    print(f"Model failed threshold: {accuracy:.4f} < {THRESHOLD}")
     sys.exit(1)
 
-print("PASSED threshold")
+print("Model passed threshold")
