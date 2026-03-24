@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Pull dataset with DVC
-        run: dvc pull
+        run: dvc pull || echo "No DVC remote configured"
 
       - name: Train model
         run: python train.py
@@ -61,7 +61,7 @@ jobs:
       - name: Install MLflow
         run: |
           pip install --upgrade pip
-          pip install mlflow
+          pip install mlflow pandas
 
       - name: Download model info artifact
         uses: actions/download-artifact@v4

@@ -2,10 +2,14 @@ import os
 import mlflow
 import mlflow.sklearn
 from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
 tracking_uri = os.environ.get("MLFLOW_TRACKING_URI")
+if not tracking_uri:
+    raise ValueError("MLFLOW_TRACKING_URI is not set")
+
 mlflow.set_tracking_uri(tracking_uri)
 mlflow.set_experiment("Assignment5_Pipeline")
 
@@ -17,17 +21,17 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 with mlflow.start_run() as run:
     model = RandomForestClassifier(
-        n_estimators=500,
-        max_depth=None,
+        n_estimators=200,
+        max_depth=10,
         random_state=42
     )
     model.fit(X_train, y_train)
 
-    # 🔥 Force accuracy to pass threshold
-    accuracy = 0.90
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
 
-    mlflow.log_param("n_estimators", 500)
-    mlflow.log_param("max_depth", None)
+    mlflow.log_param("n_estimators", 200)
+    mlflow.log_param("max_depth", 10)
     mlflow.log_metric("accuracy", accuracy)
     mlflow.sklearn.log_model(model, "model")
 
