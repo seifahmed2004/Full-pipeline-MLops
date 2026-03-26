@@ -1,8 +1,4 @@
 [core]
     remote = localremote
-['remote "myremote"']
-    url = gdrive://YOUR_FOLDER_ID
-    gdrive_acknowledge_abuse = true
-    gdrive_use_service_account = true
 ['remote "localremote"']
-    url = ../dvc_remote
+    url = ./dvc_remote
