@@ -3,3 +3,4 @@ dvc
 scikit-learn
 pandas
 numpy
+dvc-gdrive

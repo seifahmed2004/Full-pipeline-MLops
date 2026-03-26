@@ -3,7 +3,7 @@ import os
 
 import mlflow
 import mlflow.sklearn
-from sklearn.datasets import load_iris
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
@@ -22,9 +22,20 @@ experiment = mlflow.get_experiment_by_name(experiment_name)
 if experiment is None:
     raise ValueError("Failed to create or retrieve MLflow experiment")
 
-X, y = load_iris(return_X_y=True)
+# Load dataset from DVC-tracked file
+data_path = "data/iris.csv"
+if not os.path.exists(data_path):
+    raise FileNotFoundError(
+        f"{data_path} not found. Make sure DVC pulled it correctly."
+    )
+
+df = pd.read_csv(data_path)
+
+X = df.drop("target", axis=1)
+y = df["target"]
+
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+    X, y, test_size=0.2, random_state=42, stratify=y
 )
 
 with mlflow.start_run() as run:
