@@ -22,7 +22,6 @@ experiment = mlflow.get_experiment_by_name(experiment_name)
 if experiment is None:
     raise ValueError("Failed to create or retrieve MLflow experiment")
 
-# Load dataset from DVC-tracked file
 data_path = "data/iris.csv"
 if not os.path.exists(data_path):
     raise FileNotFoundError(
