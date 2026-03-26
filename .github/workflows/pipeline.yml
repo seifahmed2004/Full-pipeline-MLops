@@ -30,6 +30,10 @@ jobs:
       - name: Pull dataset with DVC
         run: dvc pull --force || echo "Using repo copy of iris.csv"
 
+      - name: Check dataset exists
+        run: |
+          ls -R data || echo "data folder missing"
+
       - name: Train model
         run: python train.py
 
