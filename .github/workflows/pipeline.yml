@@ -28,7 +28,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Pull dataset with DVC
-        run: dvc pull || echo "No DVC remote configured"
+        run: dvc pull
 
       - name: Train model
         run: python train.py
@@ -96,7 +96,11 @@ jobs:
         run: python check_threshold.py
 
       - name: Mock Docker build
-        run: 'echo "Building Docker image for Run ID: $(python -c "import json; print(json.load(open(\"model_info.txt\"))[\"run_id\"])")"'
+        run: |
+          RUN_ID=$(python -c "import json; print(json.load(open('model_info.txt'))['run_id'])")
+          echo "Building Docker image for Run ID: ${RUN_ID}"
 
       - name: Build Docker image
-        run: 'docker build --build-arg RUN_ID=$(python -c "import json; print(json.load(open(\"model_info.txt\"))[\"run_id\"])") -t my-model:latest .'
+        run: |
+          RUN_ID=$(python -c "import json; print(json.load(open('model_info.txt'))['run_id'])")
+          docker build --build-arg RUN_ID=${RUN_ID} -t my-model:latest .
